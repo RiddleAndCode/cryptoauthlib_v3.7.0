@@ -298,30 +298,27 @@ void pkcs11_debug_attributes(CK_ATTRIBUTE_PTR pTemplate, CK_ULONG ulCount)
         {
         case CKA_CLASS:
         {
-            if (pTemplate->pValue != NULL)
-            {
-                unsigned int object_id = *((CK_OBJECT_CLASS*)pTemplate->pValue);
-                const char * object_name = pkcs11_debug_get_name(object_id, pkcs11_debug_cko_names, pkcs11_debug_cko_names_count);
-                PKCS11_DEBUG_NOFILE("%s(%X):%d:%s(%x)\r\n", name, (unsigned int)pTemplate->type, (int)pTemplate->ulValueLen, object_name, object_id);
-            }
+            unsigned int object_id = *((CK_OBJECT_CLASS*)pTemplate->pValue);
+            const char * object_name = pkcs11_debug_get_name(object_id, pkcs11_debug_cko_names, pkcs11_debug_cko_names_count);
+            PKCS11_DEBUG_NOFILE("%s(%X):%d:%s(%x)\r\n", name, (unsigned int)pTemplate->type, (int)pTemplate->ulValueLen, object_name, object_id);
             break;
         }
         case CKA_LABEL:
             PKCS11_DEBUG_NOFILE("%s(%X):%d:%s\r\n", name, (unsigned int)pTemplate->type, (int)pTemplate->ulValueLen, (char*)pTemplate->pValue);
             break;
         default:
-#ifdef ATCA_HEAP
-        {
-            size_t buf_len = pTemplate->ulValueLen * 3 + 1;
-            char * buffer = pkcs11_os_malloc(buf_len);
-            (void)memset(buffer, 0, buf_len);
-            if (buffer)
+#ifndef ATCA_NO_HEAP
             {
-                (void)atcab_bin2hex_(pTemplate->pValue, pTemplate->pValue, buffer, &buf_len, false, true, true);
-                PKCS11_DEBUG_NOFILE("%s(%X):%d:%s:\r\n", name, (unsigned int)pTemplate->type, (int)pTemplate->ulValueLen, buffer);
-                pkcs11_os_free(buffer);
+                size_t buf_len = pTemplate->ulValueLen * 3 + 1;
+                char * buffer = pkcs11_os_malloc(buf_len);
+                (void)memset(buffer, 0, buf_len);
+                if (buffer)
+                {
+                    (void)atcab_bin2hex_(pTemplate->pValue, pTemplate->pValue, buffer, &buf_len, false, true, true);
+                    PKCS11_DEBUG_NOFILE("%s(%X):%d:%s:\r\n", name, (unsigned int)pTemplate->type, (int)pTemplate->ulValueLen, buffer);
+                    pkcs11_os_free(buffer);
+                }
             }
-        }
 #else
             PKCS11_DEBUG_NOFILE("%s(%X):%d:%p:\r\n", name, (unsigned int)pTemplate->type, (int)pTemplate->ulValueLen, pTemplate->pValue);
 #endif

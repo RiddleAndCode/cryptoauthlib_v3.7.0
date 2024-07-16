@@ -49,7 +49,7 @@
 ATCA_STATUS calib_derivekey(ATCADevice device, uint8_t mode, uint16_t target_key, const uint8_t* mac)
 {
     ATCAPacket packet;
-    ATCA_STATUS status;
+    ATCA_STATUS status = ATCA_GEN_FAIL;
     bool require_mac = false;
 
     do
@@ -70,8 +70,6 @@ ATCA_STATUS calib_derivekey(ATCADevice device, uint8_t mode, uint16_t target_key
             break;
         }
         #endif
-
-        (void)memset(&packet, 0x00, sizeof(ATCAPacket));
 
         // build a deriveKey command (pass through mode)
         packet.param1 = mode;
@@ -99,7 +97,8 @@ ATCA_STATUS calib_derivekey(ATCADevice device, uint8_t mode, uint16_t target_key
             break;
         }
 
-    } while (false);
+    }
+    while (false);
 
     return status;
 }

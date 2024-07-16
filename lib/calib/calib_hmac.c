@@ -53,7 +53,7 @@
 ATCA_STATUS calib_hmac(ATCADevice device, uint8_t mode, uint16_t key_id, uint8_t* digest)
 {
     ATCAPacket packet;
-    ATCA_STATUS status;
+    ATCA_STATUS status = ATCA_GEN_FAIL;
 
     do
     {
@@ -62,8 +62,6 @@ ATCA_STATUS calib_hmac(ATCADevice device, uint8_t mode, uint16_t key_id, uint8_t
             status = ATCA_TRACE(ATCA_BAD_PARAM, "NULL pointer received");
             break;
         }
-
-        (void)memset(&packet, 0, sizeof(ATCAPacket));
 
         // build HMAC command
         packet.param1 = mode;
@@ -83,13 +81,14 @@ ATCA_STATUS calib_hmac(ATCADevice device, uint8_t mode, uint16_t key_id, uint8_t
 
         if (packet.data[ATCA_COUNT_IDX] != HMAC_DIGEST_SIZE + 3u)
         {
-            status = ATCA_TRACE(ATCA_RX_FAIL, "Unexpected response size");  // Unexpected response size
+            status = ATCA_TRACE(ATCA_RX_FAIL, "Unexpected response size"); // Unexpected response size
             break;
         }
 
         (void)memcpy(digest, &packet.data[ATCA_RSP_DATA_IDX], HMAC_DIGEST_SIZE);
 
-    } while (false);
+    }
+    while (false);
 
     return status;
 }

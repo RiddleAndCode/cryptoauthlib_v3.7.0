@@ -39,13 +39,13 @@ void init_ref_array(uint8_t * buf, size_t len)
 
     for (i = 0U; i < len; i++)
     {
-        buf[i] = (uint8_t)i;
+        buf[i] = i;
     }
 }
 
 static unsigned int check_ref_array(uint8_t * buf, size_t len, size_t offset)
 {
-    size_t  i;
+    unsigned int i;
 
     for (i = offset; i < len; i++)
     {
@@ -54,7 +54,7 @@ static unsigned int check_ref_array(uint8_t * buf, size_t len, size_t offset)
             break;
         }
     }
-    return (unsigned int)(i - offset);
+    return i - offset;
 }
 
 static unsigned int check_array(uint8_t* buf, size_t len, uint8_t val)

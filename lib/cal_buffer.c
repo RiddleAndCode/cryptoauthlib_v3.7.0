@@ -28,10 +28,6 @@
 #include <string.h>
 #include "cal_buffer.h"
 
-#ifdef ATCA_PRINTF
-#include <stdio.h>
-#endif
-
 /** \ingroup cal_buf_
  * @{
  */
@@ -137,7 +133,8 @@ static ATCA_STATUS cal_buf_read_bytes_multipart(
             offset -= cab_p->len;
         }
         cab_p = cab_p->next;
-    } while ((ATCA_SUCCESS == status) && (0U < length) && (NULL != cab_p));
+    }
+    while ((ATCA_SUCCESS == status) && (0U < length) && (NULL != cab_p));
 
     if (0U < length)
     {
@@ -290,7 +287,8 @@ static ATCA_STATUS cal_buf_write_bytes_multipart(
             offset -= cab_p->len;
         }
         cab_p = cab_p->next;
-    } while ((ATCA_SUCCESS == status) && (0U < length) && (NULL != cab_p));
+    }
+    while ((ATCA_SUCCESS == status) && (0U < length) && (NULL != cab_p));
 
     if (0U < length)
     {
@@ -525,7 +523,8 @@ size_t cal_buf_get_used(cal_buffer * buf)
             /* coverity[cert_int30_c_violation] Wrapping is infeasible in practice because the total length is limited to UINT16_MAX elsewhere */
             used += buf->len;
             buf = buf->next;
-        } while ((NULL != buf) && (NULL != buf->buf) && (0U < buf->len));
+        }
+        while ((NULL != buf) && (NULL != buf->buf) && (0U < buf->len));
     #else
         used = buf->len;
     #endif
@@ -691,20 +690,6 @@ ATCA_STATUS cal_buf_set(cal_buffer * dst, size_t dst_offset, uint8_t value, size
     }
 
     return status;
-}
-
-/** \brief Initialize a cal buffer with constant pointer
- * Returns the initialized cal buffer
- */
-cal_buffer cal_buf_init_const_ptr(size_t len,const uint8_t* message)
-{
-    void **ptr = NULL;
-    /* coverity[cert_str30_c_violation] Implementation treats input attributes as constants */
-    void *lptr = &(message); 
-    (ptr) = lptr; 
-
-    cal_buffer init_buf = CAL_BUF_INIT(len,*ptr);
-    return init_buf;
 }
 
 #ifdef ATCA_PRINTF

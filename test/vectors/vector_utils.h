@@ -137,6 +137,8 @@ typedef struct
     uint8_t             data[];
 } aes_gcm_vector;
 
+ATCA_STATUS load_aes_gcm_vector(aes_gcm_vector ** vector);
+
 
 /* ------------- RSA Vector Support ------------- */
 

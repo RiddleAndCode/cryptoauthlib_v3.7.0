@@ -56,7 +56,7 @@
 ATCA_STATUS calib_selftest(ATCADevice device, uint8_t mode, uint16_t param2, uint8_t* result)
 {
     ATCAPacket packet;
-    ATCA_STATUS status;
+    ATCA_STATUS status = ATCA_GEN_FAIL;
     uint8_t response = 0;
 
     do
@@ -66,8 +66,6 @@ ATCA_STATUS calib_selftest(ATCADevice device, uint8_t mode, uint16_t param2, uin
             status = ATCA_TRACE(ATCA_BAD_PARAM, "NULL pointer received");
             break;
         }
-
-        (void)memset(&packet, 0x00, sizeof(ATCAPacket));
 
         // build a SelfTest command
         packet.param1 = mode;
@@ -92,7 +90,7 @@ ATCA_STATUS calib_selftest(ATCADevice device, uint8_t mode, uint16_t param2, uin
             // The response has bits set outside of the bit field requested by
             // the mode. This indicates an actual error rather than a self test
             // failure.
-            return status;  // Return the translated status.
+            return status; // Return the translated status.
         }
         else
         {
@@ -108,7 +106,8 @@ ATCA_STATUS calib_selftest(ATCADevice device, uint8_t mode, uint16_t param2, uin
             // the results are returned in result.
             return ATCA_SUCCESS;
         }
-    } while (false);
+    }
+    while (false);
 
     return status;
 }

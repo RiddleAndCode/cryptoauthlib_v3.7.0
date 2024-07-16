@@ -497,7 +497,10 @@ ATCA_STATUS hal_swi_gpio_send(ATCAIface iface, uint8_t word_address, uint8_t *tx
 {
     ATCAIfaceCfg *cfg = atgetifacecfg(iface);
     ATCA_STATUS status = ATCA_BAD_PARAM;
+
+    #ifdef ATCA_HAL_1WIRE
     uint8_t dev_write_addr;
+    #endif
 
     if (!cfg)
     {
@@ -512,14 +515,7 @@ ATCA_STATUS hal_swi_gpio_send(ATCAIface iface, uint8_t word_address, uint8_t *tx
             dev_write_addr = get_slave_addr_1wire(cfg->atcaswi.address, ATCA_GPIO_WRITE);
             if (ATCA_SUCCESS == (status = gpio_send_bytes(iface, &dev_write_addr, sizeof(dev_write_addr))))
             {
-                //! Send word address
-                status = gpio_send_bytes(iface, &word_address, sizeof(word_address));
-
-                //! Send data
-                if((ATCA_SUCCESS == status) && (NULL != txdata) && (0u < txlength))
-                {
-                    status = gpio_send_bytes(iface, txdata, txlength);
-                }
+                status = gpio_send_bytes(iface, txdata, txlength);
             }
             status = start_stop_cond_1wire(iface);
         }
@@ -530,10 +526,7 @@ ATCA_STATUS hal_swi_gpio_send(ATCAIface iface, uint8_t word_address, uint8_t *tx
         #ifdef ATCA_HAL_SWI
         if (ATCA_SUCCESS == (status = gpio_send_bytes(iface, &word_address, sizeof(word_address))))
         {
-            if(NULL != txdata && 0U < txlength)
-            {
-                status = gpio_send_bytes(iface, txdata, txlength);
-            }
+            status = gpio_send_bytes(iface, txdata, txlength);
         }
         #endif
     }

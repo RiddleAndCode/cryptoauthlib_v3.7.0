@@ -24,7 +24,7 @@
  * THIS SOFTWARE.
  */
 #include "atca_test.h"
-#if defined(ATCA_ECC_SUPPORT) && !defined(DO_NOT_TEST_CERT)
+#ifndef DO_NOT_TEST_CERT
 
 #ifdef __GNUC__
 // Unity macros trigger this warning

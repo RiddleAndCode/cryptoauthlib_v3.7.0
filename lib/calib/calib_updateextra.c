@@ -56,7 +56,7 @@
 ATCA_STATUS calib_updateextra(ATCADevice device, uint8_t mode, uint16_t new_value)
 {
     ATCAPacket packet;
-    ATCA_STATUS status;
+    ATCA_STATUS status = ATCA_GEN_FAIL;
 
     do
     {
@@ -83,7 +83,8 @@ ATCA_STATUS calib_updateextra(ATCADevice device, uint8_t mode, uint16_t new_valu
             break;
         }
 
-    } while (false);
+    }
+    while (false);
 
     return status;
 }

@@ -320,9 +320,9 @@ ATCA_STATUS calib_get_execution_time(uint8_t opcode, ATCADevice device)
     return status;
 }
 
-ATCA_STATUS calib_execute_send(ATCADevice device, uint8_t word_address, uint8_t* txdata, uint16_t txlength)
+ATCA_STATUS calib_execute_send(ATCADevice device, uint8_t device_address, uint8_t* txdata, uint16_t txlength)
 {
-    ATCA_STATUS status;
+    ATCA_STATUS status = ATCA_COMM_FAIL;
 
     if ((NULL == txdata) || (0u == txlength))
     {
@@ -330,15 +330,12 @@ ATCA_STATUS calib_execute_send(ATCADevice device, uint8_t word_address, uint8_t*
     }
 
 #ifdef ATCA_HAL_LEGACY_API
-    uint8_t temp_buf[CA_MAX_PACKET_SIZE + 1u] = { 0u }; //! One byte for word address
-    temp_buf[0] = word_address;
-    memcpy(&temp_buf[1], txdata, txlength);
-    txlength += 1U;
-    status = atsend(&device->mIface, 0xFF, (uint8_t*)temp_buf, (int)txlength);
+    ((void)device_address);
+    status = atsend(&device->mIface, 0xFF, (uint8_t*)txdata, (int)txlength - 1);
 #else
     if (atca_iface_is_kit(&device->mIface))
     {
-        status = atsend(&device->mIface, word_address, (uint8_t*)txdata, (int)txlength);
+        status = atsend(&device->mIface, 0xFF, (uint8_t*)&txdata[1], (int)txlength - 1);
     }
     else
     {
@@ -346,7 +343,7 @@ ATCA_STATUS calib_execute_send(ATCADevice device, uint8_t word_address, uint8_t*
         if (ATCA_UNIMPLEMENTED == status || ATCA_SUCCESS == status)
         {
             /* Send the command packet to the device */
-            status = atsend(&device->mIface, word_address, (uint8_t*)txdata, (int)txlength);
+            status = atsend(&device->mIface, device_address, (uint8_t*)txdata, (int)txlength);
         }
         (void)atcontrol(&device->mIface, (uint8_t)ATCA_HAL_CONTROL_DESELECT, NULL, 0);
     }
@@ -358,7 +355,7 @@ ATCA_STATUS calib_execute_send(ATCADevice device, uint8_t word_address, uint8_t*
 
 ATCA_STATUS calib_execute_receive(ATCADevice device, uint8_t device_address, uint8_t* rxdata, uint16_t* rxlength)
 {
-    ATCA_STATUS status;
+    ATCA_STATUS status = ATCA_COMM_FAIL;
 
     if ((NULL == rxlength) || (NULL == rxdata))
     {
@@ -399,7 +396,7 @@ ATCA_STATUS calib_execute_receive(ATCADevice device, uint8_t device_address, uin
             // Skip word address send for ECC204 device
             if (!atcab_is_ca2_device(device->mIface.mIfaceCFG->devtype))
             {
-                if (ATCA_SUCCESS != (status = atsend(&device->mIface, word_address, NULL, 0)))
+                if (ATCA_SUCCESS != (status = atsend(&device->mIface, device_address, &word_address, (int)sizeof(word_address))))
                 {
                     break;
                 }
@@ -439,13 +436,11 @@ ATCA_STATUS calib_execute_receive(ATCADevice device, uint8_t device_address, uin
                 break;
             }
 
-            if (read_length < UINT16_MAX)
-            {
-                read_length += 1u;
-            }
+            read_length += 1u;
 
             *rxlength = read_length;
-        } while (false);
+        }
+        while (false);
 
         (void)atcontrol(&device->mIface, (uint8_t)ATCA_HAL_CONTROL_DESELECT, NULL, 0);
     }
@@ -471,7 +466,7 @@ ATCA_STATUS calib_execute_command(ATCAPacket* packet, ATCADevice device)
     uint32_t max_delay_count;
     uint16_t rxsize;
     uint8_t device_address = atcab_get_device_address(device);
-    int32_t retries;
+    int32_t retries = 1;
 
     do
     {
@@ -524,8 +519,7 @@ ATCA_STATUS calib_execute_command(ATCAPacket* packet, ATCADevice device)
                 packet->reserved = 0x03;
             }
     #endif
-            /* coverity[misra_c_2012_rule_18_1_violation]  calib_execute_send will not update the members of the packet structure */
-            if (ATCA_RX_NO_RESPONSE == (status = calib_execute_send(device, packet->reserved, (uint8_t*)&packet->txsize, (uint16_t)packet->txsize)))
+            if (ATCA_RX_NO_RESPONSE == (status = calib_execute_send(device, device_address, (uint8_t*)packet, (uint16_t)packet->txsize + 1u)))
             {
                 device->device_state = (uint8_t)ATCA_DEVICE_STATE_UNKNOWN;
             }
@@ -598,7 +592,8 @@ ATCA_STATUS calib_execute_command(ATCAPacket* packet, ATCADevice device)
         {
             break;
         }
-    } while (false);
+    }
+    while (false);
 
     // Skip Idle for ECC204 device
     if (!atcab_is_ca2_device(device->mIface.mIfaceCFG->devtype))

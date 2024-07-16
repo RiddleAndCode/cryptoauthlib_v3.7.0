@@ -55,14 +55,12 @@
 ATCA_STATUS calib_info_base(ATCADevice device, uint8_t mode, uint16_t param2, uint8_t* out_data)
 {
     ATCAPacket packet;
-    ATCA_STATUS status;
+    ATCA_STATUS status = ATCA_GEN_FAIL;
 
     if (device == NULL)
     {
         return ATCA_TRACE(ATCA_BAD_PARAM, "NULL pointer received");
     }
-
-    (void)memset(&packet, 0x00, sizeof(ATCAPacket));
 
     // build an info command
     packet.param1 = mode;
@@ -114,7 +112,8 @@ ATCA_STATUS calib_info_base(ATCADevice device, uint8_t mode, uint16_t param2, ui
             }
 
         }
-    } while (false);
+    }
+    while (false);
 
     return status;
 }
@@ -146,7 +145,7 @@ ATCA_STATUS calib_info(ATCADevice device, uint8_t* revision)
 
 ATCA_STATUS calib_info_get_latch(ATCADevice device, bool* state)
 {
-    ATCA_STATUS status;
+    ATCA_STATUS status = ATCA_GEN_FAIL;
     uint8_t out_data[4];
 
     if (state == NULL)

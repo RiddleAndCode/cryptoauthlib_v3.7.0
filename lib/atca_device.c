@@ -32,7 +32,7 @@
    @{ */
 
 
-#ifdef ATCA_HEAP
+#ifndef ATCA_NO_HEAP
 /** \brief constructor for a Microchip CryptoAuth device
  * \param[in] cfg  Interface configuration object
  * \return Reference to a new ATCADevice on success. NULL on failure.
